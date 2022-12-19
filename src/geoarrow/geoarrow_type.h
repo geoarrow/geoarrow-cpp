@@ -159,6 +159,11 @@ struct GeoArrowWritableArrayView {
   struct GeoArrowWritableCoordView coords;
 };
 
+struct GeoArrowBuilder {
+  struct GeoArrowWritableArrayView view;
+  void* private_data;
+};
+
 struct GeoArrowVisitor {
   int (*reserve_coord)(struct GeoArrowVisitor* v, int64_t n);
   int (*reserve_feat)(struct GeoArrowVisitor* v, int64_t n);

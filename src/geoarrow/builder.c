@@ -297,3 +297,68 @@ static void GeoArrowSetCoordContainerLength(struct GeoArrowBuilder* builder) {
       break;
   }
 }
+
+static int feat_start_point(struct GeoArrowVisitor* v) {
+  // Reset level, reset feature coordinate count
+  return GEOARROW_OK;
+}
+
+static int null_feat_point(struct GeoArrowVisitor* v) {
+  // Write an empty to coordinates, write a null to buffer 1
+  return GEOARROW_OK;
+}
+
+static int geom_start_point(struct GeoArrowVisitor* v,
+                            enum GeoArrowGeometryType geometry_type,
+                            enum GeoArrowDimensions dimensions) {
+  // level++, geometry type, dimensions, reset size
+  // validate dimensions, maybe against some options that indicate
+  // error for mismatch, fill, or drop behaviour
+  return GEOARROW_OK;
+}
+
+static int ring_start_point(struct GeoArrowVisitor* v) {
+  // level++ geometry type, dimensions, reset size
+  return GEOARROW_OK;
+}
+
+static int coords_point(struct GeoArrowVisitor* v,
+                        const struct GeoArrowCoordView* coords) {
+  // write coords to coords
+  // solve how exactly to map a conversion from one to another if the
+  // dims don't align
+  return GEOARROW_OK;
+}
+
+static int ring_end_point(struct GeoArrowVisitor* v) {
+  // level--
+  return GEOARROW_OK;
+}
+
+static int geom_end_point(struct GeoArrowVisitor* v) {
+  // level--
+  return GEOARROW_OK;
+}
+
+static int feat_end_point(struct GeoArrowVisitor* v) {
+  // if there weren't any coords (i.e., EMPTY), we need to write some NANs here
+  // if there was >1 coords, we also need to error or we'll get misaligned output
+  return GEOARROW_OK;
+}
+
+static void GeoArrowVisitorInitPoint(struct GeoArrowBuilder* builder,
+                                     struct GeoArrowVisitor* v) {
+  struct GeoArrowError* previous_error = v->error;
+  GeoArrowVisitorInitVoid(v);
+  v->error = previous_error;
+
+  v->feat_start = &feat_start_point;
+  v->null_feat = &null_feat_point;
+  v->geom_start = &geom_start_point;
+  v->ring_start = &ring_start_point;
+  v->coords = &coords_point;
+  v->ring_end = &ring_end_point;
+  v->geom_end = &geom_end_point;
+  v->feat_end = &feat_end_point;
+  v->private_data = builder->private_data;
+}

@@ -222,11 +222,6 @@ GeoArrowErrorCode GeoArrowWKBReaderVisit(struct GeoArrowWKBReader* reader,
                                          struct GeoArrowBufferView src,
                                          struct GeoArrowVisitor* v);
 
-struct GeoArrowBuilder {
-  struct GeoArrowWritableArrayView view;
-  void* private_data;
-};
-
 GeoArrowErrorCode GeoArrowBuilderInitFromType(struct GeoArrowBuilder* builder,
                                               enum GeoArrowType type);
 
@@ -245,17 +240,7 @@ static inline void GeoArrowBuilderAppendBufferUnsafe(struct GeoArrowBuilder* bui
                                                      struct GeoArrowBufferView value);
 
 static inline GeoArrowErrorCode GeoArrowBuilderAppendBuffer(
-    struct GeoArrowBuilder* builder, int64_t i, struct GeoArrowBufferView value) {
-  if (!GeoArrowBuilderBufferCheck(builder, i, value.n_bytes)) {
-    int result = GeoArrowBuilderReserveBuffer(builder, i, value.n_bytes);
-    if (result != GEOARROW_OK) {
-      return result;
-    }
-  }
-
-  GeoArrowBuilderAppendBufferUnsafe(builder, i, value);
-  return GEOARROW_OK;
-}
+    struct GeoArrowBuilder* builder, int64_t i, struct GeoArrowBufferView value);
 
 void GeoArrowBuilderInitVisitor(struct GeoArrowBuilder* builder,
                                 struct GeoArrowVisitor* v);
@@ -271,5 +256,20 @@ void GeoArrowBuilderReset(struct GeoArrowBuilder* builder);
 #endif
 
 #include "geoarrow_type_inline.h"
+
+// Unique because it's a static inline function that needs to know about a
+// non-static inline function
+static inline GeoArrowErrorCode GeoArrowBuilderAppendBuffer(
+    struct GeoArrowBuilder* builder, int64_t i, struct GeoArrowBufferView value) {
+  if (!GeoArrowBuilderBufferCheck(builder, i, value.n_bytes)) {
+    int result = GeoArrowBuilderReserveBuffer(builder, i, value.n_bytes);
+    if (result != GEOARROW_OK) {
+      return result;
+    }
+  }
+
+  GeoArrowBuilderAppendBufferUnsafe(builder, i, value);
+  return GEOARROW_OK;
+}
 
 #endif
